@@ -64,7 +64,7 @@ self.onmessage = function (message) {
         let [wMaxPre, lMaxPre] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
         let [wMax, lMax] = calculateWinLoseRate(checkString, arr, fromLength, toLength)
         arr.forEach((elm) => calculateInternal(checkString, elm));
-        // let output = arr.sort((a, b) => a.str.length - b.str.length);
+        let output = arr.sort((a, b) => a.str.length - b.str.length);
         this.postMessage({
             arr: output,
             wMax: wMax,
