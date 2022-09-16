@@ -179,7 +179,8 @@ function getDataAndRun() {
     let toLength = parseInt(document.querySelector("#toLength").value);
     let filterBy = document.querySelector("#win-or-lose-option").value;
     let continuesBy = document.querySelector("#continue-times-option").value;
-    let continueTimes = parseInt(document.querySelector("#continue-times").value);
+    let continueTimesWin = parseInt(document.querySelector("#continue-times-win").value);
+    let continueTimesLose = parseInt(document.querySelector("#continue-times-lose").value);
     worker.postMessage({
         inputString: inputString,
         checkString: checkString,
@@ -187,7 +188,8 @@ function getDataAndRun() {
         toLength: toLength,
         filterBy: filterBy,
         continuesBy: continuesBy,
-        continueTimes: continueTimes,
+        continueTimesWin: continueTimesWin,
+        continueTimesLose: continueTimesLose,
     })
     // Add loading effect
 }

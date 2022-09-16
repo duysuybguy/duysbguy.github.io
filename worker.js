@@ -58,9 +58,9 @@ self.onmessage = function (message) {
     let data = message.data;
     // console.log(data)
     if (data !== '') {
-        let { inputString, checkString, fromLength, toLength, filterBy, continuesBy, continueTimes } = data;
+        let { inputString, checkString, fromLength, toLength, filterBy, continuesBy, continueTimesWin, continueTimesLose } = data;
         // Do work
-        let arr = splitIntoArray(inputString, fromLength, toLength, continueTimes);
+        let arr = splitIntoArray(inputString, fromLength, toLength, continueTimesWin, continueTimesLose);
         let [wMaxPre, lMaxPre] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
         let [wMax, lMax] = calculateWinLoseRate(checkString, arr, fromLength, toLength)
         arr.forEach((elm) => calculateInternal(checkString, elm));
@@ -76,7 +76,7 @@ self.onmessage = function (message) {
    
 }
 
-function splitIntoArray(inputString, fromLength, toLength, continueTimes = 5) {
+function splitIntoArray(inputString, fromLength, toLength, continueTimesWin = 5, continueTimesLose = 5) {
     let arr = [];
     for (let strLength = fromLength; strLength <= toLength; strLength++){
         for (let i = 0; i <= inputString.length - strLength; i++) {
@@ -113,13 +113,12 @@ function splitIntoArray(inputString, fromLength, toLength, continueTimes = 5) {
                 arr.push(gameObj);
                 [insideW, insideL] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
                 if (insideL <= outsideL && insideW <= outsideW) {
-                    if (insideL >= continueTimes || insideW >= continueTimes)
+                    if (insideL >= continueTimesLose || insideW >= continueTimesWin)
                         arr.pop();
                 }
                 else {
                     if (insideL > outsideL || insideW > outsideW)
-                        if (insideL >= continueTimes || insideW >= continueTimes)
-                            arr.pop();
+                        if (insideL >= continueTimesLose || insideW >= continueTimesWin) arr.pop();
                 }
             }
         }

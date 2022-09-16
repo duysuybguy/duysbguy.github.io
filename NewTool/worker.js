@@ -58,10 +58,10 @@ self.onmessage = function (message) {
     let data = message.data;
     // console.log(data)
     if (data !== '') {
-        let { inputString, checkString, fromLength, toLength, filterBy, continuesBy, continueTimes } = data;
+        let { inputString, checkString, fromLength, toLength, filterBy, continuesBy, continueTimesWin, continueTimesLose } = data;
         // Do work
         let arr = getChildArrayItem(inputString, fromLength, toLength);
-        let checkedArr = checkAndGetArr(checkString, arr, fromLength, toLength, continueTimes);
+        let checkedArr = checkAndGetArr(checkString, arr, fromLength, toLength, continueTimesWin, continueTimesLose);
         let [wMax, lMax] = calculateWinLoseRate(checkString, checkedArr, fromLength, toLength);
         checkedArr.forEach((elm) => calculateInternal(checkString, elm));
         let output = checkedArr.sort((a, b) => a.str.length - b.str.length);
@@ -102,7 +102,7 @@ function getChildArrayItem(inputString, fromLength, toLength) {
 	return arr;
 }
 
-function checkAndGetArr(inputString, inputArr, fromLength, toLength, continueTimes = 5) {
+function checkAndGetArr(inputString, inputArr, fromLength, toLength, continueTimesWin = 5, continueTimesLose = 5) {
 	let arr = [];
 	for (let index = 0; index < inputArr.length; index++) {
 		let item = inputArr[index];
@@ -110,72 +110,71 @@ function checkAndGetArr(inputString, inputArr, fromLength, toLength, continueTim
 		arr.push(item);
 		let [wMax2, lMax2] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
 		if (lMax2 > lMax || wMax2 > wMax) 
-			if (lMax2 >= continueTimes || wMax2 >= continueTimes)
-				arr.pop()
+			if (lMax2 >= continueTimesLose || wMax2 >= continueTimesWin) arr.pop();
 	}
 	return arr;
 }
 
-function splitIntoArray(inputString, fromLength, toLength, continueTimes = 5) {
-    let arr = [];
-    for (let strLength = fromLength; strLength <= toLength; strLength++){
-        for (let i = 0; i <= inputString.length - strLength; i++) {
-            let str = inputString.substring(i, i + strLength);
-            // if (!checkInclude(arr, str))
-            //     arr.push(new GameItem(str));
-            let gameObj = new GameItem(str);
-            // calculateInternal(inputString, gameObj);
-            let isNone = true;
-            let [outsideW, outsideL] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
-            let insideW, insideL;
-            for (let index = 0; index < arr.length; index++){
-                // console.log(`${gameObj.str} ---- ${arr[index].str}`)
-                if (gameObj.isIncludeOrChild(arr[index])) {
-                    // arr.push(gameObj);
-                    // console.log("Hello")
-                    let [wMax, lMax] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
-                    let temp = arr[index];
-                    arr.splice(index, 1, gameObj);
-                    let [wMax2, lMax2] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
-                    // let minL = Math.min(lMax2, lMax);
-                    if (lMax2 > lMax && wMax2 > wMax) {
-                        arr.splice(index, 1, temp);
-                    } else {
-                        if (lMax2 > lMax || wMax2 > wMax) {
-                            arr.splice(index, 1, temp);
-                        }
-                    }
-                    isNone = false;
-                }
-            }
-            if (isNone) {
-                arr.push(gameObj);
-                [insideW, insideL] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
-                // if (insideL >=5 && insideW >= 5)
-                //     arr.pop();
-                // else {
-                //     if (insideW >= 5 || insideL >=5) {
-                //         if (insideW >= 5)
-                //             arr.pop();
-                //         if (insideL >= 5)
-                //             arr.pop();
-                //     }
+// function splitIntoArray(inputString, fromLength, toLength, continueTimes = 5) {
+//     let arr = [];
+//     for (let strLength = fromLength; strLength <= toLength; strLength++){
+//         for (let i = 0; i <= inputString.length - strLength; i++) {
+//             let str = inputString.substring(i, i + strLength);
+//             // if (!checkInclude(arr, str))
+//             //     arr.push(new GameItem(str));
+//             let gameObj = new GameItem(str);
+//             // calculateInternal(inputString, gameObj);
+//             let isNone = true;
+//             let [outsideW, outsideL] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
+//             let insideW, insideL;
+//             for (let index = 0; index < arr.length; index++){
+//                 // console.log(`${gameObj.str} ---- ${arr[index].str}`)
+//                 if (gameObj.isIncludeOrChild(arr[index])) {
+//                     // arr.push(gameObj);
+//                     // console.log("Hello")
+//                     let [wMax, lMax] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
+//                     let temp = arr[index];
+//                     arr.splice(index, 1, gameObj);
+//                     let [wMax2, lMax2] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
+//                     // let minL = Math.min(lMax2, lMax);
+//                     if (lMax2 > lMax && wMax2 > wMax) {
+//                         arr.splice(index, 1, temp);
+//                     } else {
+//                         if (lMax2 > lMax || wMax2 > wMax) {
+//                             arr.splice(index, 1, temp);
+//                         }
+//                     }
+//                     isNone = false;
+//                 }
+//             }
+//             if (isNone) {
+//                 arr.push(gameObj);
+//                 [insideW, insideL] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
+//                 // if (insideL >=5 && insideW >= 5)
+//                 //     arr.pop();
+//                 // else {
+//                 //     if (insideW >= 5 || insideL >=5) {
+//                 //         if (insideW >= 5)
+//                 //             arr.pop();
+//                 //         if (insideL >= 5)
+//                 //             arr.pop();
+//                 //     }
                         
-                // }
-                if (insideL <= outsideL && insideW <= outsideW) {
-                    if (insideL >= continueTimes || insideW >= continueTimes)
-                        arr.pop();
-                }
-                else {
-                    if (insideL > outsideL || insideW > outsideW)
-                        if (insideL >= continueTimes || insideW >= continueTimes)
-                            arr.pop();
-                }
-            }
-        }
-    }
-    return arr;
-}
+//                 // }
+//                 if (insideL <= outsideL && insideW <= outsideW) {
+//                     if (insideL >= continueTimes || insideW >= continueTimes)
+//                         arr.pop();
+//                 }
+//                 else {
+//                     if (insideL > outsideL || insideW > outsideW)
+//                         if (insideL >= continueTimes || insideW >= continueTimes)
+//                             arr.pop();
+//                 }
+//             }
+//         }
+//     }
+//     return arr;
+// }
 
 
 function calculateWinLoseRate(inputString, arr, fromLength, toLength, isLogger = false) {
