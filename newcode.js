@@ -197,8 +197,10 @@ function getDataAndRun() {
 worker.onmessage = function (message) {
     let data = message.data;
     // console.log(data);
-    let { arr, wMax, lMax, wMaxPre, lMaxPre } = data;
+    let { arr, wMax, lMax, wMaxPre, lMaxPre, myContinuesCount, htmlListWin, htmlListLose } = data;
+    console.log(myContinuesCount);
     exportData(arr, wMax, lMax, wMaxPre, lMaxPre);
+    exportContinuesTime(htmlListWin, htmlListLose);
     stopCountTime();
     $("#mymodal").modal("hide");
     $("#result-time-counter").text(`(Time: ${timeCounter}s)`);
@@ -212,6 +214,14 @@ function stopAction() {
     $("#result-time-counter").text('');
     worker.terminate();
     window.location.reload();
+}
+
+function exportContinuesTime(htmlListWin, htmlListLose) {
+	let list_win = document.querySelector("#list-continues-win");
+	list_win.innerHTML = htmlListWin;
+
+	let list_lose = document.querySelector("#list-continues-lose");
+	list_lose.innerHTML = htmlListLose;
 }
 
 function exportData(output, maxValueWin=0, maxValueLost=0, wMaxPre=0, lMaxPre=0) {

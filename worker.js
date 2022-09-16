@@ -48,10 +48,85 @@ class GameItem{
     }
 }
 
+class ContinuesObject{
+    constructor(timeAt = 0) {
+        this.timeAt = timeAt;
+        this.number = 0;
+    }
+}
+
+class ContainerContinues{
+    constructor() {
+        this.myListWin = [];
+        this.myListLose = [];
+    }
+
+    increasevalue(isWin, currentAt) {
+        if (isWin) {
+            let myItem = this.isExistItem(isWin, currentAt);
+            if (myItem === null) {
+                myItem = new ContinuesObject(currentAt);
+                this.myListWin.push(myItem);
+            }
+            myItem.number++;
+        }
+        else {
+            let myItem = this.isExistItem(isWin, currentAt);
+            if (myItem === null) {
+                myItem = new ContinuesObject(currentAt);
+                this.myListLose.push(myItem);
+            }
+            myItem.number++;
+        }
+    }
+
+    isExistItem(isWin, currentAt) {
+        if (isWin) {
+            for (let i = 0; i < this.myListWin.length; i++)
+                if (this.myListWin[i].timeAt === currentAt)
+                    return this.myListWin[i];
+            return null;
+        }
+        else {
+            for (let i = 0; i < this.myListLose.length; i++)
+                if (this.myListLose[i].timeAt === currentAt)
+                    return this.myListLose[i];
+            return null;
+        }
+    }
+
+    reset() {
+        this.myListWin = [];
+        this.myListLose = [];
+    }
+
+    convertToHtmlWin() {
+        let html = '';
+        for (let i = 0; i < this.myListWin.length; i++){
+            html += `
+                <p> Liên tiếp ${this.myListWin[i].timeAt}: <span class="badge badge-primary ml-3">${this.myListWin[i].number} lần </span></p>
+            `;
+        }
+        return html;
+    }
+
+    convertToHtmlLose() {
+        let html = '';
+        for (let i = 0; i < this.myListLose.length; i++){
+            html += `
+                <p> Liên tiếp ${this.myListLose[i].timeAt}: <span class="badge badge-primary ml-3">${this.myListLose[i].number} lần </span></p>
+            `;
+        }
+        return html;
+    }
+    
+}
+
 let winState = 1;
 let loseState = -1;
 let noneState = 0;
 
+let myContinuesCount = new ContainerContinues();
 
 self.onmessage = function (message) {
     // assign variable
@@ -62,15 +137,19 @@ self.onmessage = function (message) {
         // Do work
         let arr = splitIntoArray(inputString, fromLength, toLength, continueTimesWin, continueTimesLose);
         let [wMaxPre, lMaxPre] = calculateWinLoseRate(inputString, arr, fromLength, toLength);
-        let [wMax, lMax] = calculateWinLoseRate(checkString, arr, fromLength, toLength)
+        let [wMax, lMax] = calculateWinLoseRate(checkString, arr, fromLength, toLength, true);
         arr.forEach((elm) => calculateInternal(checkString, elm));
         let output = arr.sort((a, b) => a.str.length - b.str.length);
+        
         this.postMessage({
             arr: output,
             wMax: wMax,
             lMax: lMax,
             wMaxPre: wMaxPre,
-            lMaxPre: lMaxPre
+            lMaxPre: lMaxPre,
+            myContinuesCount: myContinuesCount,
+            htmlListWin: myContinuesCount.convertToHtmlWin(),
+            htmlListLose: myContinuesCount.convertToHtmlLose(),
         })
     }
    
@@ -133,7 +212,11 @@ function calculateWinLoseRate(inputString, arr, fromLength, toLength, isLogger =
 	let previousState = noneState;
 	let currentState = noneState;
 	let winContinue = 0;
-	let loseContinue = 0;
+    let loseContinue = 0;
+
+    if (isLogger)
+        myContinuesCount.reset();
+    
 	for (let i = fromLength - 1; i < inputString.length; i++) {
 		// console.log("Index: " + i);
 		let sub;
@@ -150,22 +233,10 @@ function calculateWinLoseRate(inputString, arr, fromLength, toLength, isLogger =
 			}
 		}
 
-		if (isLogger) {
-			console.log(`${sub}`);
-		}
-		// console.log(`${sub}: count(${countOne})`)
-		// if (countOne > 1 || countOne == 0 || i >= inputString.length) {
-		// 	if (isLogger && countOne > 1) console.log("Count different");
-		// 	continue;
-		// }
 		if (countT === countX) continue;
 
 		if (countX > countT) dectectItem = "X";
 
-		// if (isLogger) {
-		// 	console.log(`${sub} - ${item.str}`);
-		// 	console.log(`Compare: ${inputString[i]} - ${item.dectect}`);
-		// }
 
 		if (inputString[i] === dectectItem) {
 			// console.log("Win");
@@ -182,6 +253,12 @@ function calculateWinLoseRate(inputString, arr, fromLength, toLength, isLogger =
 				else winContinue = 1;
 				previousState = currentState;
 			}
+
+			// Counter
+			if (isLogger) {
+				myContinuesCount.increasevalue(true, winContinue);
+            }
+            
 		} else {
 			// console.log("Lost");
 			// item.lostNum++;
@@ -196,14 +273,16 @@ function calculateWinLoseRate(inputString, arr, fromLength, toLength, isLogger =
 				if (currentState === previousState) loseContinue++;
 				else loseContinue = 1;
 				previousState = currentState;
-			}
+            }
+            
+            if (isLogger) {
+				myContinuesCount.increasevalue(false, loseContinue);
+            }
 		}
-		if (isLogger) {
-			console.log(`${winContinue} - ${loseContinue}`);
-		}
+
 		// Update max value
 		if (winContinue > wMax) wMax = winContinue;
-		if (loseContinue > lMax) lMax = loseContinue;
+        if (loseContinue > lMax) lMax = loseContinue;
 	}
 	// console.log(`${wMax} - ${lMax}`);
 	return [wMax, lMax];
